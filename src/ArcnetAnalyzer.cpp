@@ -36,7 +36,7 @@ void ArcnetAnalyzer::WorkerThread()
 	mSerial = GetAnalyzerChannelData(mSettings->mInputChannel);
 	
 	ClockGenerator clock;
-	clock.Init(mSettings->mBitRate, mSampleRateHz);
+	clock.Init(mSettings->mBitRate*2, mSampleRateHz);
 
 	while (true)
 	{
