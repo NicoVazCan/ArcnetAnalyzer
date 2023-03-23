@@ -21,9 +21,27 @@ void ArcnetAnalyzerResults::GenerateBubbleText( U64 frame_index, Channel& channe
 	ClearResultStrings();
 	Frame frame = GetFrame( frame_index );
 
-	char number_str[128];
-	AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
-	AddResultString( number_str );
+	switch (frame.mType)
+	{
+	case SD:
+		AddResultString("SD");
+		break;
+
+	case RSU:
+		AddResultString("RSU");
+		break;
+
+	case ISU:
+		char number_str[128];
+		AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
+		AddResultString( number_str );
+		break;
+
+	default:
+		AddResultString("Unrecognized frame type");
+	}
+	
+	
 }
 
 void ArcnetAnalyzerResults::GenerateExportFile( const char* file, DisplayBase display_base, U32 export_type_user_id )

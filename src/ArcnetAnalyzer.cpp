@@ -38,9 +38,12 @@ void ArcnetAnalyzer::WorkerThread()
 	ClockGenerator clock;
 	clock.Init(mSettings->mBitRate*2, mSampleRateHz);
 
+	auto H = mSettings->mInverted? BIT_LOW: BIT_HIGH;
+	auto L = mSettings->mInverted? BIT_HIGH: BIT_LOW;
+
 	while (true)
 	{
-		if (mSerial->GetBitState() == BIT_LOW)
+		if (mSerial->GetBitState() == L)
 		{
 			mSerial->AdvanceToNextEdge();
 			mSerial->Advance(clock.AdvanceByHalfPeriod());
@@ -60,7 +63,7 @@ void ArcnetAnalyzer::WorkerThread()
 			{
 			case State::WAIT:
 
-				if (mSerial->GetBitState() == BIT_HIGH)
+				if (mSerial->GetBitState() == H)
 				{
 					if (f == FRM_SD_LEN-1)
 					{
@@ -86,8 +89,8 @@ void ArcnetAnalyzer::WorkerThread()
 						mState = State::RECONF;
 					}
 					else if (not(
-						mSerial->GetBitState() == BIT_HIGH && f <= 1 ||
-						mSerial->GetBitState() == BIT_LOW && f == 2
+						mSerial->GetBitState() == H && f <= 1 ||
+						mSerial->GetBitState() == L && f == 2
 					))
 					{
 						endedFrame = true;
@@ -98,8 +101,8 @@ void ArcnetAnalyzer::WorkerThread()
 				}
 				else
 				{
-					if (mSerial->GetBitState() == BIT_HIGH)
-						data |= 1 << (3-f);
+					if (mSerial->GetBitState() == H)
+						data |= 1 << (f-3);
 
 					if (f == FRM_ISU_LEN-1)
 					{
@@ -115,7 +118,7 @@ void ArcnetAnalyzer::WorkerThread()
 			case State::RECONF:
 				if (f == FRM_RSU_LEN-1)
 				{
-					if (mSerial->GetBitState() == BIT_LOW)
+					if (mSerial->GetBitState() == L)
 					{
 						type = RSU;
 						sendFrame = true;
@@ -128,7 +131,7 @@ void ArcnetAnalyzer::WorkerThread()
 						mState = State::WAIT;
 					}
 				}
-				else if (mSerial->GetBitState() == BIT_LOW)
+				else if (mSerial->GetBitState() == L)
 				{
 					endedFrame = true;
 
