@@ -1,14 +1,14 @@
-#ifndef SIMPLESERIAL_ANALYZER_SETTINGS
-#define SIMPLESERIAL_ANALYZER_SETTINGS
+#ifndef ARCNET_ANALYZER_SETTINGS
+#define ARCNET_ANALYZER_SETTINGS
 
 #include <AnalyzerSettings.h>
 #include <AnalyzerTypes.h>
 
-class SimpleSerialAnalyzerSettings : public AnalyzerSettings
+class ArcnetAnalyzerSettings : public AnalyzerSettings
 {
 public:
-	SimpleSerialAnalyzerSettings();
-	virtual ~SimpleSerialAnalyzerSettings();
+	ArcnetAnalyzerSettings();
+	virtual ~ArcnetAnalyzerSettings();
 
 	virtual bool SetSettingsFromInterfaces();
 	void UpdateInterfacesFromSettings();
@@ -24,4 +24,4 @@ protected:
 	std::auto_ptr< AnalyzerSettingInterfaceInteger >	mBitRateInterface;
 };
 
-#endif //SIMPLESERIAL_ANALYZER_SETTINGS
+#endif //ARCNET_ANALYZER_SETTINGS

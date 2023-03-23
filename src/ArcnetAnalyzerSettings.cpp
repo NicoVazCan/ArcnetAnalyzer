@@ -1,13 +1,13 @@
-#include "SimpleSerialAnalyzerSettings.h"
+#include "ArcnetAnalyzerSettings.h"
 #include <AnalyzerHelpers.h>
 
 
-SimpleSerialAnalyzerSettings::SimpleSerialAnalyzerSettings()
+ArcnetAnalyzerSettings::ArcnetAnalyzerSettings()
 :	mInputChannel( UNDEFINED_CHANNEL ),
 	mBitRate( 9600 )
 {
 	mInputChannelInterface.reset( new AnalyzerSettingInterfaceChannel() );
-	mInputChannelInterface->SetTitleAndTooltip( "Serial", "Standard Simple Serial" );
+	mInputChannelInterface->SetTitleAndTooltip( "Arcnet", "Standard Arcnet Analyzer" );
 	mInputChannelInterface->SetChannel( mInputChannel );
 
 	mBitRateInterface.reset( new AnalyzerSettingInterfaceInteger() );
@@ -27,28 +27,28 @@ SimpleSerialAnalyzerSettings::SimpleSerialAnalyzerSettings()
 	AddChannel( mInputChannel, "Serial", false );
 }
 
-SimpleSerialAnalyzerSettings::~SimpleSerialAnalyzerSettings()
+ArcnetAnalyzerSettings::~ArcnetAnalyzerSettings()
 {
 }
 
-bool SimpleSerialAnalyzerSettings::SetSettingsFromInterfaces()
+bool ArcnetAnalyzerSettings::SetSettingsFromInterfaces()
 {
 	mInputChannel = mInputChannelInterface->GetChannel();
 	mBitRate = mBitRateInterface->GetInteger();
 
 	ClearChannels();
-	AddChannel( mInputChannel, "Simple Serial", true );
+	AddChannel( mInputChannel, "Arcnet Analyzer", true );
 
 	return true;
 }
 
-void SimpleSerialAnalyzerSettings::UpdateInterfacesFromSettings()
+void ArcnetAnalyzerSettings::UpdateInterfacesFromSettings()
 {
 	mInputChannelInterface->SetChannel( mInputChannel );
 	mBitRateInterface->SetInteger( mBitRate );
 }
 
-void SimpleSerialAnalyzerSettings::LoadSettings( const char* settings )
+void ArcnetAnalyzerSettings::LoadSettings( const char* settings )
 {
 	SimpleArchive text_archive;
 	text_archive.SetString( settings );
@@ -57,12 +57,12 @@ void SimpleSerialAnalyzerSettings::LoadSettings( const char* settings )
 	text_archive >> mBitRate;
 
 	ClearChannels();
-	AddChannel( mInputChannel, "Simple Serial", true );
+	AddChannel( mInputChannel, "Arcnet Analyzer", true );
 
 	UpdateInterfacesFromSettings();
 }
 
-const char* SimpleSerialAnalyzerSettings::SaveSettings()
+const char* ArcnetAnalyzerSettings::SaveSettings()
 {
 	SimpleArchive text_archive;
 

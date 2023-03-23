@@ -1,16 +1,27 @@
-#ifndef SIMPLESERIAL_ANALYZER_H
-#define SIMPLESERIAL_ANALYZER_H
+#ifndef ARCNET_ANALYZER_H
+#define ARCNET_ANALYZER_H
 
 #include <Analyzer.h>
-#include "SimpleSerialAnalyzerResults.h"
-#include "SimpleSerialSimulationDataGenerator.h"
+#include <AnalyzerHelpers.h>
+#include "ArcnetAnalyzerResults.h"
+#include "ArcnetSimulationDataGenerator.h"
 
-class SimpleSerialAnalyzerSettings;
-class ANALYZER_EXPORT SimpleSerialAnalyzer : public Analyzer2
+#define SD 1
+#define RSU 2
+#define ISU 3
+
+class ArcnetAnalyzerSettings;
+
+enum State
+{
+	WAIT, PACKET, RECONF 
+};
+
+class ANALYZER_EXPORT ArcnetAnalyzer : public Analyzer2
 {
 public:
-	SimpleSerialAnalyzer();
-	virtual ~SimpleSerialAnalyzer();
+	ArcnetAnalyzer();
+	virtual ~ArcnetAnalyzer();
 
 	virtual void SetupResults();
 	virtual void WorkerThread();
@@ -22,21 +33,23 @@ public:
 	virtual bool NeedsRerun();
 
 protected: //vars
-	std::auto_ptr< SimpleSerialAnalyzerSettings > mSettings;
-	std::auto_ptr< SimpleSerialAnalyzerResults > mResults;
+	std::auto_ptr< ArcnetAnalyzerSettings > mSettings;
+	std::auto_ptr< ArcnetAnalyzerResults > mResults;
 	AnalyzerChannelData* mSerial;
 
-	SimpleSerialSimulationDataGenerator mSimulationDataGenerator;
+	ArcnetSimulationDataGenerator mSimulationDataGenerator;
 	bool mSimulationInitilized;
 
 	//Serial analysis vars:
 	U32 mSampleRateHz;
 	U32 mStartOfStopBitOffset;
 	U32 mEndOfStopBitOffset;
+
+	State mState;
 };
 
 extern "C" ANALYZER_EXPORT const char* __cdecl GetAnalyzerName();
 extern "C" ANALYZER_EXPORT Analyzer* __cdecl CreateAnalyzer( );
 extern "C" ANALYZER_EXPORT void __cdecl DestroyAnalyzer( Analyzer* analyzer );
 
-#endif //SIMPLESERIAL_ANALYZER_H
+#endif //ARCNET_ANALYZER_H

@@ -1,16 +1,16 @@
-#ifndef SIMPLESERIAL_ANALYZER_RESULTS
-#define SIMPLESERIAL_ANALYZER_RESULTS
+#ifndef ARCNET_ANALYZER_RESULTS
+#define ARCNET_ANALYZER_RESULTS
 
 #include <AnalyzerResults.h>
 
-class SimpleSerialAnalyzer;
-class SimpleSerialAnalyzerSettings;
+class ArcnetAnalyzer;
+class ArcnetAnalyzerSettings;
 
-class SimpleSerialAnalyzerResults : public AnalyzerResults
+class ArcnetAnalyzerResults : public AnalyzerResults
 {
 public:
-	SimpleSerialAnalyzerResults( SimpleSerialAnalyzer* analyzer, SimpleSerialAnalyzerSettings* settings );
-	virtual ~SimpleSerialAnalyzerResults();
+	ArcnetAnalyzerResults( ArcnetAnalyzer* analyzer, ArcnetAnalyzerSettings* settings );
+	virtual ~ArcnetAnalyzerResults();
 
 	virtual void GenerateBubbleText( U64 frame_index, Channel& channel, DisplayBase display_base );
 	virtual void GenerateExportFile( const char* file, DisplayBase display_base, U32 export_type_user_id );
@@ -22,8 +22,8 @@ public:
 protected: //functions
 
 protected:  //vars
-	SimpleSerialAnalyzerSettings* mSettings;
-	SimpleSerialAnalyzer* mAnalyzer;
+	ArcnetAnalyzerSettings* mSettings;
+	ArcnetAnalyzer* mAnalyzer;
 };
 
-#endif //SIMPLESERIAL_ANALYZER_RESULTS
+#endif //ARCNET_ANALYZER_RESULTS
