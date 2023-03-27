@@ -6,16 +6,28 @@
 #include "ArcnetAnalyzerResults.h"
 #include "ArcnetSimulationDataGenerator.h"
 
-#define SD 1
-#define RSU 2
-#define ISU 3
+
+enum FrmFormat
+{
+	WAIT, BASIC, RECON 
+};
+
+enum BasicFrm
+{
+	BFN, ITT, FBE, PAC 
+};
+
+enum BasicSimbUnit
+{
+	BSN, SD, RSU, ISU, SOH, ENQ, ACK, NAK, EOT, NID, SID, DID, CP, SC, DATA, FCS
+};
+
+enum FrmFlag
+{
+	OK, ERROR
+};
 
 class ArcnetAnalyzerSettings;
-
-enum State
-{
-	WAIT, PACKET, RECONF 
-};
 
 class ANALYZER_EXPORT ArcnetAnalyzer : public Analyzer2
 {
@@ -44,8 +56,6 @@ protected: //vars
 	U32 mSampleRateHz;
 	U32 mStartOfStopBitOffset;
 	U32 mEndOfStopBitOffset;
-
-	State mState;
 };
 
 extern "C" ANALYZER_EXPORT const char* __cdecl GetAnalyzerName();
