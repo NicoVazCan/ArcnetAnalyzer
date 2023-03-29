@@ -4,7 +4,7 @@
 
 ArcnetAnalyzerSettings::ArcnetAnalyzerSettings()
 :	mInputChannel( UNDEFINED_CHANNEL ),
-	mBitRate(5000000),
+	mBitRate(4999400),
 	mInverted(false)
 {
 	mInputChannelInterface.reset( new AnalyzerSettingInterfaceChannel() );

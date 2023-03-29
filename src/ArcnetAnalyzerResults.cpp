@@ -32,7 +32,8 @@ void ArcnetAnalyzerResults::GenerateBubbleText( U64 frame_index, Channel& channe
 			break;
 
 		case RSU:
-			AddResultString("RSU");
+			AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
+			AddResultString("RSU:", number_str);
 			break;
 
 		case ISU:
@@ -98,7 +99,8 @@ void ArcnetAnalyzerResults::GenerateBubbleText( U64 frame_index, Channel& channe
 		break;
 
 	case ERROR:
-		AddResultString("ERROR");
+		AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
+		AddResultString("ERROR:", number_str);
 		break;
 	
 	default:

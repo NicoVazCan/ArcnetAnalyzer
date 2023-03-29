@@ -31,6 +31,8 @@ class ArcnetAnalyzerSettings;
 
 class ANALYZER_EXPORT ArcnetAnalyzer : public Analyzer2
 {
+	void SendFrame(U64 data, BasicSimbUnit basicSimbUnit, FrmFlag flag, U64 starting_sample, U64 ending_sample);
+
 public:
 	ArcnetAnalyzer();
 	virtual ~ArcnetAnalyzer();

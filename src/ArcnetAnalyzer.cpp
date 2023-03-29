@@ -3,7 +3,9 @@
 #include <AnalyzerChannelData.h>
 
 #define FRM_SD_LEN	6
+#define FRM_CON_LEN 2
 #define FRM_RSU_LEN	9
+#define FRM_PRE_LEN 3
 #define FRM_ISU_LEN	11
 #define RECON_FRMS	765
 
@@ -63,7 +65,7 @@ void ArcnetAnalyzer::WorkerThread()
 
 		bool endedFrame = false;
 		U64 data = 0;
-		U64 starting_sample = mSerial->GetSampleNumber();
+		U64 starting_sample = mSerial->GetSampleNumber(), aux_sample;
 		bool reconf = false;
 
 
@@ -74,39 +76,86 @@ void ArcnetAnalyzer::WorkerThread()
 			switch (frmFormat)
 			{
 			case WAIT:
-				if (mSerial->GetBitState() == H)
+				if (b <= 7)
 				{
 					if (b == FRM_SD_LEN-1)
+						aux_sample = mSerial->GetSampleNumber();
+
+					if (mSerial->GetBitState() == L)
+					{
+						basicFrm = BFN;
+						basicSimbUnit = BSN;
+						flag = ERROR;
+						f = 0;
+						endedFrame = true;
+					}
+				}
+				else if (b == 8)
+				{
+					if (mSerial->GetBitState() == H)
+					{
+						reconf = true;
+					}
+					else
+					{
+						SendFrame(0, SD, OK, starting_sample-1, aux_sample);
+						starting_sample = aux_sample;
+						f++;
+					}
+				}
+				else if (reconf)
+				{
+					if (b == FRM_CON_LEN+FRM_RSU_LEN-1)
+					{
+						if (mSerial->GetBitState() == L)
+						{
+							basicFrm = BFN;
+							basicSimbUnit = RSU;
+							flag = OK;
+
+							frmFormat = RECON;
+						}
+						else
+						{
+							basicFrm = BFN;
+							basicSimbUnit = BSN;
+							flag = ERROR;
+						}
+						f = 0;
+						endedFrame = true;
+					}
+					else
+					{
+						if (mSerial->GetBitState() == L)
+						{
+							basicFrm = BFN;
+							basicSimbUnit = BSN;
+							flag = ERROR;
+							f = 0;
+							endedFrame = true;
+						}
+					}
+				} 
+				else
+				{
+					if (mSerial->GetBitState() == H)
+						data |= 1 << (b-FRM_SD_LEN-FRM_PRE_LEN);
+
+					if (b == FRM_SD_LEN+FRM_ISU_LEN-1)
 					{
 						flag = OK;
-						basicSimbUnit = SD;
+						basicSimbUnit = ISU;
 						endedFrame = true;
 
 						frmFormat = BASIC;
 					}
-				}
-				else
-				{
-					basicFrm = BFN;
-					basicSimbUnit = BSN;
-					flag = ERROR;
-					f = 0;
-					endedFrame = true;
 				}
 				break;
 
 			case BASIC:
 				if (b <= 2)
 				{
-					if (reconf && b == 0 && mSerial->GetBitState() == BIT_LOW)
-					{
-						flag = OK;
-						basicSimbUnit = RSU;
-						endedFrame = true;
-
-						frmFormat = RECON;
-					}
-					else if (not(
+					if (not(
 						mSerial->GetBitState() == H && b <= 1 ||
 						mSerial->GetBitState() == L && b == 2
 					))
@@ -119,20 +168,17 @@ void ArcnetAnalyzer::WorkerThread()
 
 						frmFormat = WAIT;
 					}
-
 				}
 				else
 				{
 					if (mSerial->GetBitState() == H)
-						data |= 1 << (b-3);
+						data |= 1 << (b-FRM_PRE_LEN);
 
 					if (b == FRM_ISU_LEN-1)
 					{
 						flag = OK;
 						basicSimbUnit = ISU;
 						endedFrame = true;
-
-						reconf = data == 255;
 					}
 				}
 				break;
@@ -164,8 +210,6 @@ void ArcnetAnalyzer::WorkerThread()
 					flag = ERROR;
 					f = 0;
 					endedFrame = true;
-
-					frmFormat = WAIT;
 				}
 				break;
 			}
@@ -350,21 +394,18 @@ void ArcnetAnalyzer::WorkerThread()
 			default:
 				switch (basicSimbUnit)
 				{
-				case SD:
-					if (f == 0)
-					{
-						flag = OK;
-						f++;
-					}
-					else
-					{
-						basicFrm = BFN;
-						basicSimbUnit = BSN;
-						flag = ERROR;
-						f = 0;
+				case RSU:
+					basicFrm = BFN;
+					frmFormat = RECON;
+					data = f;
 
+					if (f == RECON_FRMS-1)
+					{
+						f = 0;
 						frmFormat = WAIT;
 					}
+					else f++;
+
 					break;
 
 				case ISU:
@@ -488,24 +529,26 @@ void ArcnetAnalyzer::WorkerThread()
 			}
 		}
 
-
-		// Send Frame
-
-		Frame frame;
-		frame.mData1 = data;
-		frame.mData2 = 0;
-		frame.mType = basicSimbUnit;
-		frame.mFlags = flag;
-		frame.mStartingSampleInclusive = starting_sample;
-		frame.mEndingSampleInclusive = mSerial->GetSampleNumber();
-
-		mResults->AddFrame(frame);
-		mResults->CommitResults();
-		ReportProgress(frame.mEndingSampleInclusive);
-
-
+		SendFrame(data, basicSimbUnit, flag, starting_sample-1, mSerial->GetSampleNumber());
+		
 		CheckIfThreadShouldExit();
 	}
+}
+
+void ArcnetAnalyzer::SendFrame(U64 data, BasicSimbUnit basicSimbUnit, FrmFlag flag, U64 starting_sample, U64 ending_sample)
+{
+	Frame frame;
+	
+	frame.mData1 = data;
+	frame.mData2 = 0;
+	frame.mType = basicSimbUnit;
+	frame.mFlags = flag;
+	frame.mStartingSampleInclusive = starting_sample;
+	frame.mEndingSampleInclusive = ending_sample;
+
+	mResults->AddFrame(frame);
+	mResults->CommitResults();
+	ReportProgress(frame.mEndingSampleInclusive);
 }
 
 bool ArcnetAnalyzer::NeedsRerun()
@@ -522,7 +565,7 @@ U32 ArcnetAnalyzer::GenerateSimulationData( U64 minimum_sample_index, U32 device
 		mSimulationInitilized = true;
 	}*/
 
-	return NULL;//mSimulationDataGenerator.GenerateSimulationData( minimum_sample_index, device_sample_rate, simulation_channels );
+	return 0;//mSimulationDataGenerator.GenerateSimulationData( minimum_sample_index, device_sample_rate, simulation_channels );
 }
 
 U32 ArcnetAnalyzer::GetMinimumSampleRateHz()
