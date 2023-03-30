@@ -155,7 +155,7 @@ void ArcnetAnalyzer::WorkerThread()
 			case BASIC:
 				if (b <= 2)
 				{
-					if (not(
+					if (!(
 						mSerial->GetBitState() == H && b <= 1 ||
 						mSerial->GetBitState() == L && b == 2
 					))
