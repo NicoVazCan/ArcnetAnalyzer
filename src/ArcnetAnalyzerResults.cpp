@@ -114,10 +114,10 @@ void ArcnetAnalyzerResults::GenerateExportFile( const char* file, DisplayBase di
 
 	U64 trigger_sample = mAnalyzer->GetTriggerSample();
 	U32 sample_rate = mAnalyzer->GetSampleRate();
-
-	file_stream << "Time [s],Value" << std::endl;
-
 	U64 num_frames = GetNumFrames();
+
+	file_stream << "Time [s], SC, DATA, ..., DATA";
+
 	for( U32 i=0; i < num_frames; i++ )
 	{
 		Frame frame = GetFrame( i );
@@ -125,94 +125,34 @@ void ArcnetAnalyzerResults::GenerateExportFile( const char* file, DisplayBase di
 		char time_str[128];
 		char number_str[128];
 
-
-		AnalyzerHelpers::GetTimeString( frame.mStartingSampleInclusive, trigger_sample, sample_rate, time_str, 128 );
-		file_stream << time_str;
-
-		switch (frame.mFlags)
-		{
-		case OK:
-			switch (frame.mType)
+		switch(frame.mFlags)
+        {
+        case OK:
+			switch(frame.mType)
 			{
-			case SD:
-				file_stream << "SD";
-				break;
-
-			case RSU:
-				file_stream << "RSU";
-				break;
-
-			case ISU:
-				AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
-				file_stream << "ISU:" << number_str;
-				break;
-
-			case SOH:
-				file_stream << "SOH";
-				break;
-
-			case ENQ:
-				file_stream << "ENQ";
-				break;
-
-			case ACK:
-				file_stream << "ACK";
-				break;
-
-			case NAK:
-				file_stream << "NAK";
-				break;
-
-			case EOT:
-				file_stream << "EOT";
-				break;
-
-			case NID:
-				AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
-				file_stream << "NID:" << number_str;
-				break;
-
-			case SID:
-				AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
-				file_stream << "SID:" << number_str;
-				break;
-
-			case DID:
-				AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
-				file_stream << "DID:" << number_str;
-				break;
-
-			case CP:
-				AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
-				file_stream << "CP:" << number_str;
-				break;
-
-			case SC:
-				AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
-				file_stream << "SC:" << number_str;
-				break;
+            case SC:
+                AnalyzerHelpers::GetTimeString( frame.mStartingSampleInclusive, trigger_sample, sample_rate, time_str, 128 );
+                file_stream << std::endl;
+                file_stream << time_str;
+                file_stream.put( ',' );
+                AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
+                file_stream << number_str;
+                break;
 
 			case DATA:
-				AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
-				file_stream << "DATA:" << number_str;
-				break;
+                file_stream.put( ',' );
+                AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
+                file_stream << number_str;
+                break;
 
-			case FCS:
-				AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
-				file_stream << "FCS:" << number_str;
-				break;
+            default:
+                break;
 			}
 			break;
 
-		case ERROR:
-			file_stream << "ERROR";
-			break;
-		
-		default:
-			file_stream << "Unrecognised";
-		}
-
-		file_stream << std::endl;
+        default:
+            break;
+        }
 
 		if( UpdateExportProgressAndCheckForCancel( i, num_frames ) == true )
 		{
