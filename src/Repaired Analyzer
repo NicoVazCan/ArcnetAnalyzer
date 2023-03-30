@@ -276,6 +276,7 @@ void ArcnetAnalyzer::WorkerThread()
 						break;
 
 					case 3:
+						basicFrm = BFN;
 						basicSimbUnit = DID;
 						flag = OK;
 						f = 0;
