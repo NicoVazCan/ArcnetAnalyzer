@@ -155,7 +155,7 @@ void ArcnetAnalyzer::WorkerThread()
 			case BASIC:
 				if (b <= 2)
 				{
-					if (not(
+					if (!(
 						mSerial->GetBitState() == H && b <= 1 ||
 						mSerial->GetBitState() == L && b == 2
 					))
@@ -276,6 +276,7 @@ void ArcnetAnalyzer::WorkerThread()
 						break;
 
 					case 3:
+						basicFrm = BFN;
 						basicSimbUnit = DID;
 						flag = OK;
 						f = 0;
@@ -503,6 +504,7 @@ void ArcnetAnalyzer::WorkerThread()
 					case FRM_ACK_D:
 						if (f == 1)
 						{
+							basicFrm = BFN;
 							basicSimbUnit = ACK;
 							flag = OK;
 							f = 0;
@@ -523,6 +525,7 @@ void ArcnetAnalyzer::WorkerThread()
 					case FRM_NAK_D:
 						if (f == 1)
 						{
+							basicFrm = BFN;
 							basicSimbUnit = NAK;
 							flag = OK;
 							f = 0;
