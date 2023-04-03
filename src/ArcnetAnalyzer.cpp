@@ -66,7 +66,7 @@ void ArcnetAnalyzer::WorkerThread()
 		bool endedFrame = false;
 		U64 data = 0;
 		U64 starting_sample = mSerial->GetSampleNumber(), aux_sample;
-		bool reconf = false;
+		bool reconf = false, longPAC = false;
 
 
 		// Extract Basic Frames
@@ -327,9 +327,17 @@ void ArcnetAnalyzer::WorkerThread()
 						break;
 
 					case 5:
-						if (0x03 <= data || 0xFF >= data)
+						if (0 == data)
 						{
-							cp = data;
+							longPAC = true;
+							basicSimbUnit = CP;
+							flag = OK;
+							f++;
+						}
+						else if (0x03 <= data || 0xFF >= data)
+						{
+							longPAC = false;
+							cp = 256-data;
 							basicSimbUnit = CP;
 							flag = OK;
 							f++;
@@ -345,39 +353,82 @@ void ArcnetAnalyzer::WorkerThread()
 						}
 						break;
 
-					case 6:
-						basicSimbUnit = SC;
-						flag = OK;
-						f++;
-						break;
-
 					default:
-						if ((f-6)*11 <= cp)
+						if (longPAC)
 						{
-							basicSimbUnit = DATA;
-							flag = OK;
-							f++;
-						}
-						else
-						{
-							basicSimbUnit = FCS;
-							flag = OK;
-
-							if (fcs)
+							if (f == 6)
 							{
-								basicFrm = BFN;
-								f = 0;
-								fcs = 0;
-
-								frmFormat = WAIT;
+								cp = 512-data;
+								basicSimbUnit = CP;
+								flag = OK;
+								f++;
+							}
+							else if (f == 7)
+							{
+								basicSimbUnit = SC;
+								flag = OK;
+								f++;
+							}
+							else if (f-6 <= cp)
+							{
+								basicSimbUnit = DATA;
+								flag = OK;
+								f++;
 							}
 							else
 							{
-								f++;
-								fcs++;
+								basicSimbUnit = FCS;
+								flag = OK;
+
+								if (fcs)
+								{
+									basicFrm = BFN;
+									f = 0;
+									fcs = 0;
+
+									frmFormat = WAIT;
+								}
+								else
+								{
+									f++;
+									fcs++;
+								}
 							}
 						}
-						
+						else
+						{
+							if (f == 6)
+							{
+								basicSimbUnit = SC;
+								flag = OK;
+								f++;
+							}
+							else if (f-5 <= cp)
+							{
+								basicSimbUnit = DATA;
+								flag = OK;
+								f++;
+							}
+							else
+							{
+								basicSimbUnit = FCS;
+								flag = OK;
+
+								if (fcs)
+								{
+									basicFrm = BFN;
+									f = 0;
+									fcs = 0;
+
+									frmFormat = WAIT;
+								}
+								else
+								{
+									f++;
+									fcs++;
+								}
+							}
+						}
 					}
 				}
 				else
