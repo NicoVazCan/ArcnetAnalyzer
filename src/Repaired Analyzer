@@ -98,7 +98,7 @@ void ArcnetAnalyzer::WorkerThread()
 					}
 					else
 					{
-						SendFrame(0, SD, OK, starting_sample+1, aux_sample);
+						SendFrame(0, SD, OK, starting_sample-1, aux_sample);
 						starting_sample = aux_sample;
 						f++;
 					}
@@ -172,7 +172,7 @@ void ArcnetAnalyzer::WorkerThread()
 				else
 				{
 					if (mSerial->GetBitState() == H)
-						data |= 1LL << (b-FRM_PRE_LEN);
+						data |= 1 << (b-FRM_PRE_LEN);
 
 					if (b == FRM_ISU_LEN-1)
 					{
@@ -530,7 +530,7 @@ void ArcnetAnalyzer::WorkerThread()
 			}
 		}
 
-		SendFrame(data, basicSimbUnit, flag, starting_sample+1, mSerial->GetSampleNumber());
+		SendFrame(data, basicSimbUnit, flag, starting_sample-1, mSerial->GetSampleNumber());
 		
 		CheckIfThreadShouldExit();
 	}
